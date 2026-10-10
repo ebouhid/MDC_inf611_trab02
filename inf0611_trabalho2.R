@@ -4,9 +4,9 @@
 # Trabalho Avaliativo 2
 #----------------------------------------------------------------#
 # Nome COMPLETO dos integrantes dp grupo:  
-# -                                        
-# -                                        
-# -                                        
+# - Anderson Soares
+# - Eduardo Bouhid                        
+# - Mateus Coelho                         
 # 
 #----------------------------------------------------------------#
 
@@ -14,7 +14,7 @@
 # Configuracao dos arquivos auxiliares 
 #----------------------------------------------------------------#
 # configure o caminho antes de executar
-# setwd("") 
+# setwd("")
 options(warn=-1)
 source("./ranking_metrics.R")
 source("./trabalho2_base.R")
@@ -25,23 +25,21 @@ path_plantas = './plantas'
 #----------------------------------------------------------------#
 # Leitura das imagens 
 #----------------------------------------------------------------#
-imagens <- <to-do>
+imagens <- read_images("plantas/")
 
 #----------------------------------------------------------------#
 # Obtem classe de cada imagem 
 #----------------------------------------------------------------#
-nome_classes <- <to-do>
-
-
+nome_classes <- get_classes("plantas/")
 
 #----------------------------------------------------------------#
 # obtem ground_truth para cada classe 
 #----------------------------------------------------------------#
-ground_truth_biloba <- <to-do>
-ground_truth_europaea <- <to-do>
-ground_truth_ilex <- <to-do>
-ground_truth_monogyna <- <to-do>
-ground_truth_regia <- <to-do>
+ground_truth_biloba <- get_ground_truth("plantas/", nome_classes, "biloba")
+ground_truth_europaea <- get_ground_truth("plantas/", nome_classes, "europaea")
+ground_truth_ilex <- get_ground_truth("plantas/", nome_classes, "ilex")
+ground_truth_monogyna <- get_ground_truth("plantas/", nome_classes, "monogyna")
+ground_truth_regia <- get_ground_truth("plantas/", nome_classes, "regia")
 
 
 #----------------------------------------------------------------#
@@ -50,18 +48,23 @@ ground_truth_regia <- <to-do>
 
 # obtem caracteristicas de cor  
 hist_cor_desc <- function(img){
-  <to-do>
+  r <- hist(img[,,1]*255, plot=FALSE, breaks=0:255)$counts
+  g <- hist(img[,,2]*255, plot=FALSE, breaks=0:255)$counts
+  b <- hist(img[,,3]*255, plot=FALSE, breaks=0:255)$counts
+  return(c(r, g, b))
 }
 
 # obtem caracteristicas de textura   
 lbp_desc <- function(img){
-  <to-do>
+  r1 <- lbp(img[,,1,1],1)
+  lbp_uniforme <- hist(r1$lbp.u2, plot=FALSE, breaks=59)$counts
+  return(c(lbp_uniforme))
 }
 
 
 # obtem caracteristicas de forma 
 Momentos <-function(img){
-  
+  img <- as.matrix(grayscale(img))
   centroide <- function(M) {
     c(momento(M, 1, 0) / momento(M, 0, 0),
       momento(M, 0, 1) / momento(M, 0, 0))
@@ -82,8 +85,14 @@ Momentos <-function(img){
         r <- r + (i - x)^p * (j - y)^q * M[i,j]  
     return(r)
   }
-  
-  <to-do>
+  features <- NULL
+  for(i in 0:2){
+    for(j in 0:2){
+      #adiciona um novo momento como caracteristica no vetor de caracteristicas da imagem
+      features <- cbind(features,momento(img, i,j, central=TRUE))
+    }
+  }
+  return(features)
 }
 
 
@@ -91,11 +100,11 @@ Momentos <-function(img){
 # obtem características de cor, textura e forma  
 # para todas as imagens e armazena em matrizes 
 # onde uma linha e uma imagem 
-features_c <- <to-do>
+features_c <- do.call(rbind, lapply(imagens, hist_cor_desc))
 rownames(features_c) <- names(imagens)
-features_t <- <to-do>
+features_t <- do.call(rbind, lapply(imagens, lbp_desc))
 rownames(features_t) <- names(imagens)
-features_s <- <to-do>
+features_s <- do.call(rbind, lapply(imagens, Momentos))
 rownames(features_s) <- names(imagens)
 
 
