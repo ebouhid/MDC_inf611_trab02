@@ -56,7 +56,7 @@ hist_cor_desc <- function(img){
 
 # obtem caracteristicas de textura   
 lbp_desc <- function(img){
-  r1 <- lbp(img[,,1,1],1)
+  r1 <- lbp(grayscale(img)[,,1,1],1)
   lbp_uniforme <- hist(r1$lbp.u2, plot=FALSE, breaks=59)$counts
   return(c(lbp_uniforme))
 }
@@ -115,39 +115,42 @@ rownames(features_s) <- names(imagens)
 
 # definindo as consultas
 # obs.:  use o caminho completo para a imagem
-consulta_biloba <- "./plantas/biloba_02.jpg"
-consulta_europaea <- "./plantas/europaea_01.jpg"
-consulta_ilex <- "./plantas/ilex_08.jpg"
-consulta_monogyna <- "./plantas/monogyna_04.jpg"
-consulta_regia <- "./plantas/regia_07.jpg"
+consulta_biloba <- "plantas//biloba_02.jpg"
+consulta_europaea <- "plantas//europaea_01.jpg"
+consulta_ilex <- "plantas//ilex_08.jpg"
+consulta_monogyna <- "plantas//monogyna_04.jpg"
+consulta_regia <- "plantas//regia_07.jpg"
 
 # visualizando as consultas
 par(mfrow = c(3,3), mar = rep(2, 4))
-mostrarImagemColorida(<to-do>)
-<to-do>
-  
+mostrarImagemColorida(consulta_biloba)
+mostrarImagemColorida(consulta_europaea)
+mostrarImagemColorida(consulta_ilex)
+mostrarImagemColorida(consulta_monogyna)
+mostrarImagemColorida(consulta_regia)
+
 #-----------------------------#
 # construindo rankings                          
 # para cada uma das 5 consultas, construa um ranking com base na cor
-ranking_c_biloba <- <to-do>
-ranking_c_europaea <- <to-do>
-ranking_c_ilex <- <to-do>
-ranking_c_monogyna <- <to-do>
-ranking_c_regia <- <to-do>
+ranking_c_biloba <- get_ranking_by_distance(features_c, consulta_biloba, method = "euclidean")
+ranking_c_europaea <- get_ranking_by_distance(features_c, consulta_europaea, method = "euclidean")
+ranking_c_ilex <- get_ranking_by_distance(features_c, consulta_ilex, method = "euclidean")
+ranking_c_monogyna <- get_ranking_by_distance(features_c, consulta_monogyna, method = "euclidean")
+ranking_c_regia <- get_ranking_by_distance(features_c, consulta_regia, method = "euclidean")
 
 # para cada uma das 5 consultas, construa um ranking com base na textura
-ranking_t_biloba <- <to-do>
-ranking_t_europaea <- <to-do>
-ranking_t_ilex <- <to-do>
-ranking_t_monogyna <- <to-do>
-ranking_t_regia <- <to-do>
+ranking_t_biloba <- get_ranking_by_distance(features_t, consulta_biloba, method = "euclidean")
+ranking_t_europaea <- get_ranking_by_distance(features_t, consulta_europaea, method = "euclidean")
+ranking_t_ilex <- get_ranking_by_distance(features_t, consulta_ilex, method = "euclidean")
+ranking_t_monogyna <- get_ranking_by_distance(features_t, consulta_monogyna, method = "euclidean")
+ranking_t_regia <- get_ranking_by_distance(features_t, consulta_regia, method = "euclidean")
   
 # para cada uma das 5 consultas, construa um ranking com base na forma
-ranking_s_biloba <- <to-do>
-ranking_s_europaea <- <to-do>
-ranking_s_ilex <- <to-do>
-ranking_s_monogyna <- <to-do>
-ranking_s_regia <- <to-do>
+ranking_s_biloba <- get_ranking_by_distance(features_s, consulta_biloba, method = "euclidean")
+ranking_s_europaea <- get_ranking_by_distance(features_s, consulta_europaea, method = "euclidean")
+ranking_s_ilex <- get_ranking_by_distance(features_s, consulta_ilex, method = "euclidean")
+ranking_s_monogyna <- get_ranking_by_distance(features_s, consulta_monogyna, method = "euclidean")
+ranking_s_regia <- get_ranking_by_distance(features_s, consulta_regia, method = "euclidean")
 
 #-----------------------------#
 # comparando  rankings                              
@@ -157,43 +160,246 @@ ranking_s_regia <- <to-do>
 # top 5, 10, 15 e 20
   
 analyse_rankings <- function(ranking, ground_truth) {
-  <to-do>
+  ks <- c(5, 10, 15, 20)
+  data.frame(
+    k = ks,
+    precisao = sapply(ks, function(k) precision(ground_truth, ranking, k)),
+    revocacao = sapply(ks, function(k) recall(ground_truth, ranking, k)),
+    f1 = sapply(ks, function(k) f1_score(ground_truth, ranking, k)),
+    ap = sapply(ks, function(k) ap(ground_truth, ranking, k))
+  )
 }
 
 # analisando rankings gerados com caracteristicas de cor
-analyse_rankings(<to-do>)
+analyse_rankings(ranking_c_biloba, ground_truth_biloba)
+analyse_rankings(ranking_c_europaea, ground_truth_europaea)
+analyse_rankings(ranking_c_ilex, ground_truth_ilex)
+analyse_rankings(ranking_c_monogyna, ground_truth_monogyna)
+analyse_rankings(ranking_c_regia, ground_truth_regia)
 
 # analisando rankings gerados com caracteristicas de textura
-analyse_rankings(<to-do>)
+analyse_rankings(ranking_t_biloba, ground_truth_biloba)
+analyse_rankings(ranking_t_europaea, ground_truth_europaea)
+analyse_rankings(ranking_t_ilex, ground_truth_ilex)
+analyse_rankings(ranking_t_monogyna, ground_truth_monogyna)
+analyse_rankings(ranking_t_regia, ground_truth_regia)
 
 # analisando rankings gerados com caracteristicas de forma
-analyse_rankings(<to-do>)
+analyse_rankings(ranking_s_biloba, ground_truth_biloba)
+analyse_rankings(ranking_s_europaea, ground_truth_europaea)
+analyse_rankings(ranking_s_ilex, ground_truth_ilex)
+analyse_rankings(ranking_s_monogyna, ground_truth_monogyna)
+analyse_rankings(ranking_s_regia, ground_truth_regia)
+
+#-----------------------------#
+# (e) ANALISE da consulta regia: o que domina a
+# distancia euclidiana em cada descritor
+
+# fracao media de d^2 = sum((x_i - q_i)^2) explicada por cada
+# componente do vetor (na.rm descarta a propria consulta, 0/0)
+contrib_dist <- function(M, query) {
+  d2 <- sweep(M, 2, M[query, ])^2
+  colMeans(d2 / rowSums(d2), na.rm = TRUE)
+}
+
+classes <- as.vector(nome_classes)
+dims <- t(sapply(imagens, function(img)
+  c(largura = width(img), pixels = width(img) * height(img))))
+
+# textura: bins com maior peso na distancia
+contrib_t <- contrib_dist(features_t, consulta_regia)
+top_t <- order(contrib_t, decreasing = TRUE)[1:5]
+round(setNames(contrib_t[top_t], top_t), 3)
+# convertendo lbp.u2 para a notação convencional
+bn <- matrix(dec2bin(0:255), ncol = 8)
+cod_uniformes <- which(apply(bn, 1, lbnum) <= 2) - 1 # até 2 transições
+bn[cod_uniformes[top_t[1] + 1] + 1, ]
+
+# imagens de ilex que apareceram nas 10 primeiras posições do ranking
+ilex_top10 <- c("plantas//ilex_06.jpg", "plantas//ilex_08.jpg",
+                "plantas//ilex_10.jpg")
+cbind(padrao = features_t[c(consulta_regia, ilex_top10), top_t[1]],
+      dims[c(consulta_regia, ilex_top10), ])
+tapply(features_t[, top_t[1]], classes, mean)
+head(ranking_t_regia, 10)
+
+# cor: fracao da distancia nos bins claros (200-255 nos 3 canais)
+head(ranking_c_regia, 10)
+contrib_c <- contrib_dist(features_c, consulta_regia)
+bins_claros <- c(200:255, 255 + 200:255, 510 + 200:255)
+sum(contrib_c[bins_claros])
+# pixels claros (canal R) e total de pixels, na ordem do ranking
+data.frame(claros = rowSums(features_c[, 200:255]),
+           pixels = dims[, "pixels"])[ranking_c_regia[1:25], ]
+which(ground_truth_regia[ranking_c_regia] == 1)
+# cor media dos pixels da folha (cinza < 0.6), por classe
+cor_folha <- function(img, limiar = 0.6) {
+  folha <- as.matrix(grayscale(img)) < limiar
+  c(R = mean(R(img)[folha]), G = mean(G(img)[folha]),
+    B = mean(B(img)[folha]))
+}
+round(apply(t(sapply(imagens, cor_folha)), 2,
+            function(x) tapply(x, classes, mean)), 2)
+
+# forma: fracao da distancia por momento
+contrib_s <- contrib_dist(features_s, consulta_regia)
+round(setNames(contrib_s, paste0("mu", rep(0:2, each = 3),
+                                 rep(0:2, 3))), 3)
+# relacao entre a distancia de forma e a diferenca de largura
+cor(get_distance_vector(features_s, consulta_regia),
+    abs(dims[, "largura"] - dims[consulta_regia, "largura"]),
+    method = "spearman")
+tapply(dims[, "largura"], classes, range)
+head(ranking_s_regia, 10)
+
+#-----------------------------#
+# (f) precisao media em top 10 nas 5 consultas
+
+# pares (ground truth, ranking) de cada descritor, no formato usado
+# por mean_average_precision e generate_df_11_points
+pares_c <- list(biloba   = list(ground_truth_biloba, ranking_c_biloba),
+                europaea = list(ground_truth_europaea, ranking_c_europaea),
+                ilex     = list(ground_truth_ilex, ranking_c_ilex),
+                monogyna = list(ground_truth_monogyna, ranking_c_monogyna),
+                regia    = list(ground_truth_regia, ranking_c_regia))
+pares_t <- list(biloba   = list(ground_truth_biloba, ranking_t_biloba),
+                europaea = list(ground_truth_europaea, ranking_t_europaea),
+                ilex     = list(ground_truth_ilex, ranking_t_ilex),
+                monogyna = list(ground_truth_monogyna, ranking_t_monogyna),
+                regia    = list(ground_truth_regia, ranking_t_regia))
+pares_s <- list(biloba   = list(ground_truth_biloba, ranking_s_biloba),
+                europaea = list(ground_truth_europaea, ranking_s_europaea),
+                ilex     = list(ground_truth_ilex, ranking_s_ilex),
+                monogyna = list(ground_truth_monogyna, ranking_s_monogyna),
+                regia    = list(ground_truth_regia, ranking_s_regia))
+descritores <- list(cor = pares_c, textura = pares_t, forma = pares_s)
+
+# AP@10 de cada consulta e a media (MAP@10)
+ap_10 <- sapply(descritores, function(p) 
+  sapply(p, function(x) ap(x[[1]], x[[2]], 10)))
+round(rbind(ap_10, MAP = sapply(descritores, mean_average_precision, 
+                                k = 10)), 3)
+
+# cor: peso dos bins claros na distancia, para cada consulta
+consultas <- c(biloba = consulta_biloba, europaea = consulta_europaea,
+               ilex = consulta_ilex, monogyna = consulta_monogyna,
+               regia = consulta_regia)
+round(sapply(consultas, function(q) 
+  sum(contrib_dist(features_c, q)[bins_claros])), 3)
+
+# textura: biloba e monogyna se misturam nos rankings uma da outra
+head(ranking_t_biloba, 10)
+head(ranking_t_monogyna, 10)
+
+#-----------------------------#
+# (g) precisao x revocacao interpolada em 11 pontos (media das 5 
+# consultas)
+df_c_11_points <- generate_df_11_points(pares_c)
+df_t_11_points <- generate_df_11_points(pares_t)
+df_s_11_points <- generate_df_11_points(pares_s)
+plot_precision_x_recall_11_points_t2(
+  rbind(df_c_11_points, df_t_11_points, df_s_11_points),
+  c("Cor", "Textura", "Forma"),
+  "Precisao x Revocacao interpolada em 11 pontos (5 consultas)")
+# os 11 pontos lado a lado e a media de cada curva
+pontos_11 <- data.frame(rec = df_c_11_points$rec, 
+                        cor = df_c_11_points$prec,
+                        textura = df_t_11_points$prec, 
+                        forma = df_s_11_points$prec)
+round(pontos_11, 3)
+round(colMeans(pontos_11[, -1]), 3)
+# curvas de 11 pontos por consulta, para ver quem puxa cada media
+lapply(descritores, function(p)
+  round(sapply(p, function(x) generate_df_11_points(list(x))$prec), 2))
+# media das curvas so nas consultas europaea, ilex e regia
+round(cbind(rec = df_c_11_points$rec, sapply(descritores, function(p)
+  generate_df_11_points(p[c("europaea", "ilex", "regia")])$prec)), 3)
 
 #----------------------------------------------------------------#
 # Questao 2 - RESPONDA:                   
-# (e) 
-#                                         
-#                                         
-#                                         
-#                                         
-#                                         
-#                                         
-# (f)  
-#                                         
-#                                         
-#                                         
-#                                         
-#                                         
+# (e) Consulta escolhida: regia_07
+#     Resultados (P@5 | P@10 | AP@10 | R@20 | AP@20):
+#       - Cor:     0,8 | 0,6 | 0,444 | 0,8 | 0,538
+#       - Textura: 0,6 | 0,7 | 0,575 | 1,0 | 0,778
+#       - Forma:   0,4 | 0,2 | 0,167 | 0,4 | 0,217
+#     O melhor ranking foi o de TEXTURA. A cor só leva vantagem no top 5
+#     (P@5 = 0,8 contra 0,6) e cai a partir do top 10. A textura
+#     tem precisão, F1 e precisão média maiores do top 10 em diante e
+#     recupera as 90% das regias com k=15. A recuperação por forma foi
+#     bem pior que as outras duas.
+#     Visualmente, as folhas régias ocupam boa parte da imagem. A cor é
+#     marrom-acinzentada com aspecto enrugado e nervuras marcadas.
+#     - Textura: cerca de 80% da distância vem do bin do padrão LBP
+#       11111111, típico de regiões homogêneas (como o fundo liso). Como a
+#       folha grande e enrugada deixa pouca área homogênea, a regia_07 tem
+#       ~161 mil pixels nesse padrão, contra ~320 mil em biloba e
+#       monogyna, que têm muito fundo branco. Os erros (ilex_06, ilex_08 e
+#       ilex_10, nas posições 4, 5 e 8) são folhas escuras e granuladas
+#       em imagens menores, que acabam com uma contagem parecida
+#       (~170 mil).
+# 
+#     - Cor: o histograma não guarda informação espacial e usa contagens
+#       absolutas, e ~87% da distância vem dos bins claros, ou seja, do
+#       fundo. As europaea têm folha também escura e pouco saturada e, por
+#       serem imagens pequenas, uma quantidade de fundo parecida com a da
+#       regia_07. Por isso entram no ranking nas posições 2, 6, 7 e 9.
+# 
+#     - Forma: os momentos não são normalizados e são calculados na imagem
+#       inteira, então a distância depende quase só do momento mu22, que
+#       reflete as dimensões da imagem. A largura das regia (534-671 px) é
+#       parecida com a de biloba, ilex e monogyna, e o ranking traz
+#       imagens de tamanho parecido de qualquer classe (só regia_03 entra
+#       no top 10).
+# (f) AP@10 de cada consulta e a média (MAP@10):
+#       consulta    cor    textura  forma
+#       biloba      1,000  0,392    0,125
+#       europaea    0,569  0,900    1,000
+#       ilex        0,332  0,300    0,393
+#       monogyna    1,000  0,271    0,275
+#       regia       0,444  0,575    0,167
+#       MAP@10      0,669  0,487    0,392
+#     Por essa medida, a COR teve o melhor resultado, seguida da textura
+#     e da forma. A vantagem, porém, vem quase toda de biloba e monogyna,
+#     as duas com AP@10 = 1. Nas outras três consultas a cor fica entre
+#     0,33 e 0,57 e não é a melhor em nenhuma delas.
+#     Isso acontece porque, em todas as consultas, 87% a 99.6% da
+#     distância de cor vem dos bins claros (fundo).
+#     A textura é a melhor só na regia e vai bem na europaea (mAP 0.90), mas
+#     confunde biloba e monogyna (5 imagens da outra classe no top 10 de
+#     cada uma).
+# 
 # (g) dica: use a função generate_df_11_points para gerar o 
 # data.frame interpolado para cada descritor. Depois, use a função
 # plot_precision_x_recall_11_points_t2 para gerar o gráfico. 
 # Exemplo de chamada da função generate_df_11_points:
 # df_c_11_points <- generate_df_11_points(list(list(ground_truth_biloba, ranking_c_biloba), list(ground_truth_europaea, ranking_c_europaea)))
 # Exemplo de chamada da função plot_precision_x_recall_11_points_t2:
-# plot_precision_x_recall_11_points_t2(rbind(df_c_11_points, df_t_11_points, df_s_11_points), c("Cor", "Textura", "Forma"), "Titulo do Gráfico") 
-#                                         
-#                                         
-#                                         
+# plot_precision_x_recall_11_points_t2(rbind(df_c_11_points, df_t_11_points, df_s_11_points), c("Cor", "Textura", "Forma"), "Titulo do Gráfico")
+#
+#     Precisão interpolada (média das 5 consultas):
+#       rev.     0,0  0,1  0,2  0,3  0,4  0,5  0,6  0,7  0,8  0,9  1,0
+#       cor      1,00 1,00 0,96 0,87 0,87 0,77 0,68 0,66 0,66 0,65 0,65
+#       textura  1,00 1,00 0,91 0,67 0,67 0,65 0,64 0,64 0,64 0,64 0,52
+#       forma    1,00 1,00 0,74 0,54 0,54 0,52 0,43 0,43 0,43 0,43 0,41
+#     Média dos 11 pontos: cor 0,798, textura 0,726, forma 0,587.
+#     A curva da COR fica acima das outras em todos os níveis de
+#     recall, então ela teve o melhor resultado geral, seguida da
+#     textura. A forma fica abaixo de todas a partir de recall = 0.2.
+#     Note que os pontos 0,0 e 0,1 valem 1 nos
+#     três descritores porque a própria consulta é sempre a 1ª imagem do
+#     ranking.
+#     A maior diferença entre cor e textura está no recall entre 0,3 e 0,5
+#     (precisão = 0,874 contra 0,672 em 0,3 e 0,4). De 0,6 a 0,9, as duas quase empatam
+#     (diferença menor que 0,04), e em 1,0 a textura cai para 0,515,
+#     enquanto a cor fica em 0,653.
+#     As curvas por consulta mostram que a média da cor é sustentada por
+#     biloba e monogyna, que têm precisão 1 em todos os níveis (pelo
+#     fundo, como explicado na (f)). Considerando só europaea, ilex e
+#     regia, a textura fica acima da cor a partir de 0,5 de revocação
+#     (0,717 contra 0,613 em 0,5, 0,717 contra 0,468 em 0,6 e 0,561
+#     contra 0,422 em 1,0), e até a forma supera a cor nessa faixa.
+#     Assim, pela média a cor é a melhor, mas a textura é mais estável
+#     nas consultas em que o fundo não ajuda a separar as classes.
 #----------------------------------------------------------------#
 
 
