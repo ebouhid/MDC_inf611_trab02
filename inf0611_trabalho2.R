@@ -4,8 +4,8 @@
 # Trabalho Avaliativo 2
 #----------------------------------------------------------------#
 # Nome COMPLETO dos integrantes dp grupo:  
-# - Anderson Soares
-# - Eduardo Bouhid                        
+# - Anderson Luis Bento Soares
+# - Eduardo Bouhid Neto                      
 # - Mateus Coelho                         
 # 
 #----------------------------------------------------------------#
@@ -411,33 +411,159 @@ round(cbind(rec = df_c_11_points$rec, sapply(descritores, function(p)
 
 ## obter vetores finais de caracteristicas pela concatenação de 
 # cada tipo de caracteristica (cor, textura e forma):
-features_concat <- <to-do>
-  
+features_concat <- cbind(features_c, features_t, features_s)
+
 # gerar novos rankings
-ranking_concat_biloba <- <to-do>
-ranking_concat_europaea <- <to-do>
-ranking_concat_ilex <- <to-do>
-ranking_concat_monogyna <- <to-do>
-ranking_concat_regia <- <to-do>
-  
+ranking_concat_biloba <- get_ranking_by_distance(features_concat, consulta_biloba, method = "euclidean")
+ranking_concat_europaea <- get_ranking_by_distance(features_concat, consulta_europaea, method = "euclidean")
+ranking_concat_ilex <- get_ranking_by_distance(features_concat, consulta_ilex, method = "euclidean")
+ranking_concat_monogyna <- get_ranking_by_distance(features_concat, consulta_monogyna, method = "euclidean")
+ranking_concat_regia <- get_ranking_by_distance(features_concat, consulta_regia, method = "euclidean")
+
 # analisando rankings gerados com caracteristicas concatenadas
-analyse_rankings(<to-do>)
+analyse_rankings(ranking_concat_biloba, ground_truth_biloba)
+analyse_rankings(ranking_concat_europaea, ground_truth_europaea)
+analyse_rankings(ranking_concat_ilex, ground_truth_ilex)
+analyse_rankings(ranking_concat_monogyna, ground_truth_monogyna)
+analyse_rankings(ranking_concat_regia, ground_truth_regia)
+
+#-----------------------------#
+# (d) consulta regia: concatenado x descritores individuais
+pares_concat <- list(biloba   = list(ground_truth_biloba, ranking_concat_biloba),
+                     europaea = list(ground_truth_europaea, ranking_concat_europaea),
+                     ilex     = list(ground_truth_ilex, ranking_concat_ilex),
+                     monogyna = list(ground_truth_monogyna, ranking_concat_monogyna),
+                     regia    = list(ground_truth_regia, ranking_concat_regia))
+descritores_concat <- c(descritores, list(concat = pares_concat))
+lapply(descritores_concat, function(p)
+  analyse_rankings(p$regia[[2]], p$regia[[1]]))
+# top 10 com as dimensoes das imagens (todas com altura 800)
+dims[head(ranking_concat_regia, 10), ]
+# so a europaea tem imagens pequenas, o que a separa pelo tamanho
+tapply(dims[, "largura"], classes, range)
+
+#-----------------------------#
+# (e) peso de cada descritor na distancia do vetor concatenado
+
+# fracao de d^2 explicada por cada bloco (cor, textura, forma)
+blocos <- rep(c("cor", "textura", "forma"),
+              c(ncol(features_c), ncol(features_t), ncol(features_s)))
+signif(sapply(consultas, function(q)
+  tapply(contrib_dist(features_concat, q), blocos, sum)), 3)
+# dentro do bloco de forma, so o mu22 importa
+round(contrib_dist(features_concat, consulta_regia)[blocos == "forma"], 4)
+# ordem de grandeza dos valores e das distancias de cada bloco
+feats <- list(cor = features_c, textura = features_t, forma = features_s)
+signif(sapply(feats, function(M) max(abs(M))), 3)
+signif(sapply(feats, function(M)
+  median(sqrt(rowSums(sweep(M, 2, M[consulta_regia, ])^2)))), 3)
+# o ranking concatenado e identico ao de forma em todas as consultas
+sapply(names(consultas), function(q)
+  identical(pares_concat[[q]][[2]], pares_s[[q]][[2]]))
+# sobreposicao do top 10 com cada descritor individual
+round(sapply(descritores[c("cor", "textura", "forma")], function(p)
+  sapply(names(consultas), function(q)
+    jaccard_index(pares_concat[[q]][[2]], p[[q]][[2]], 10))), 3)
+
+# experimento: padronizando cada coluna (z-score) antes de concatenar
+features_concat_z <- cbind(scale(features_c), scale(features_t),
+                           scale(features_s))
+round(sapply(consultas, function(q)
+  tapply(contrib_dist(features_concat_z, q), blocos, sum)), 3)
+pares_concat_z <- lapply(names(consultas), function(q)
+  list(pares_concat[[q]][[1]],
+       get_ranking_by_distance(features_concat_z, consultas[[q]])))
+names(pares_concat_z) <- names(consultas)
+analyse_rankings(pares_concat_z$regia[[2]], ground_truth_regia)
+round(c(sapply(pares_concat_z, function(x) ap(x[[1]], x[[2]], 10)),
+        MAP = mean_average_precision(pares_concat_z, 10)), 3)
+
+#-----------------------------#
+# (f) curva de 11 pontos incluindo o descritor concatenado
+df_concat_11_points <- generate_df_11_points(pares_concat)
+plot_precision_x_recall_11_points_t2(
+  rbind(df_c_11_points, df_t_11_points, df_s_11_points, df_concat_11_points),
+  c("Cor", "Textura", "Forma", "Concatenado"),
+  "Precisao x Revocacao interpolada em 11 pontos (5 consultas)")
+pontos_11_concat <- cbind(pontos_11, concat = df_concat_11_points$prec)
+round(pontos_11_concat, 3)
+round(colMeans(pontos_11_concat[, -1]), 3)
+# MAP@10 com o concatenado
+round(sapply(descritores_concat, mean_average_precision, k = 10), 3)
+# curva do concatenado por consulta
+round(sapply(pares_concat, function(x)
+  generate_df_11_points(list(x))$prec), 2)
+# media da curva do concatenado padronizado (z-score)
+round(mean(generate_df_11_points(pares_concat_z)$prec), 3)
 
 
 #----------------------------------------------------------------#
-# Questao 3 - RESPONDA:  
-# (d) 
-# 
-# 
-# (e) 
-# 
-# 
-# 
-# 
-# (f)
-# 
-# 
-# 
+# Questao 3 - RESPONDA:
+# (d) Consulta escolhida: regia_07
+#     Resultados (P@5 | P@10 | AP@10 | R@20 | AP@20):
+#       - Concatenado: 0,4 | 0,2 | 0,167 | 0,4 | 0,217
+#       - Cor:         0,8 | 0,6 | 0,444 | 0,8 | 0,538
+#       - Textura:     0,6 | 0,7 | 0,575 | 1,0 | 0,778
+#       - Forma:       0,4 | 0,2 | 0,167 | 0,4 | 0,217
+#     Os descritores combinados apresentaram resultados piores. O ranking
+#     concatenado tem exatamente as mesmas métricas da forma, que já era
+#     o pior descritor para a regia, e fica bem abaixo da cor e da
+#     textura em todos os tops. No top 10, além da própria consulta, só
+#     aparece a regia_03; o resto são imagens de outras classes
+#     (ilex_05, biloba_03, monogyna_10, ...) com tamanho parecido com o
+#     da regia_07: todas têm 800 px de altura e largura entre 473 e
+#     586 px (a regia_07 tem 534).
+#     O mesmo acontece nas outras consultas, o concatenado repete a
+#     forma. Ele vai bem na europaea (AP@10 = 1), cujas imagens são as
+#     únicas pequenas (196 a 265 px de largura) e se separam das demais
+#     só pelo tamanho, e na ilex (0,393), onde a própria forma já era
+#     o melhor descritor, mas vai mal na biloba (0,125) e na monogyna (0,275),
+#     justamente as consultas em que a cor tinha AP@10 = 1. Ou seja, a concatenação
+#     simples não juntou o que cada descritor tinha de melhor.
+#
+# (e) Sim, a forma domina completamente o ranking concatenado. A
+#     concatenação foi feita sem normalização, e os blocos têm ordens
+#     de grandeza muito diferentes, cor e textura são contagens de
+#     pixels (até ~4,3e5), enquanto os momentos centrais de forma chegam
+#     a ~1,4e15 (o mu22 da regia_07 vale 4,3e14). A distância mediana
+#     até a regia_07 é de 1,6e5 na cor, 8,4e4 na textura e 2,2e14 na
+#     forma. Assim, a forma responde por praticamente 100% de d^2 em
+#     todas as consultas (a cor e a textura somam menos de 3e-16), e
+#     dentro da forma o mu22 sozinho explica 100%.
+#     Como consequência, o ranking concatenado é idêntico ao de forma
+#     nas 5 consultas (Jaccard@10 = 1 com a forma, contra 0,11 com a cor
+#     e com a textura na regia). Na prática, ele ordena as imagens pelo
+#     mu22, que, como vimos na Q2 (e), reflete o tamanho da imagem. A
+#     forma não domina por ser mais informativa, mas por causa da escala.
+#     Para confirmar, padronizamos cada coluna (z-score) antes de
+#     concatenar: aí a regia_07 passa a ter P@10 = 0,8 e AP@10 = 0,800
+#     (melhor que qualquer descritor isolado) e o MAP@10 sobe para
+#     0,603. Mesmo assim, a influência continua desigual, agora a favor
+#     da cor, que responde por 87% a 94% de d^2 por ter 765 das 832
+#     dimensões. Logo, a combinação por concatenação exige normalizar e
+#     ponderar os blocos.
+#
+# (f) Precisão interpolada (média das 5 consultas):
+#       rev.         0,0  0,1  0,2  0,3  0,4  0,5  0,6  0,7  0,8  0,9  1,0
+#       concatenado  1,00 1,00 0,74 0,54 0,54 0,52 0,43 0,43 0,43 0,43 0,41
+#     Média dos 11 pontos: cor 0,798, textura 0,726, forma 0,587 e
+#     concatenado 0,587. MAP@10: cor 0,669, textura 0,487, forma 0,392 e
+#     concatenado 0,392.
+#     A curva do concatenado fica exatamente sobre a da forma (ponto a
+#     ponto; no gráfico, a linha da forma cobre a do concatenado e só
+#     os pontos aparecem) e, a partir de 0,2 de revocação, abaixo das curvas de cor
+#     e de textura. Por consulta, o concatenado só é bom na europaea
+#     (precisão 1 em todos os níveis); na biloba fica em ~0,25 e na
+#     regia em 0,28 a partir de 0,3 de revocação.
+#     As conclusões se mantêm e ficam mais fortes:
+#     - (d): o concatenado é pior não só na regia, mas também na média
+#       das 5 consultas, empatando com o pior descritor individual.
+#     - (e): a sobreposição exata das curvas (e dos rankings) em todas as
+#       consultas mostra que o domínio da forma não é um caso isolado da
+#       regia, mas um efeito da escala dos momentos.
+#     Com a padronização (z-score), a média da curva sobe para 0,758,
+#     acima da textura e da forma, mas ainda abaixo da cor, o que é
+#     coerente com a cor dominar a distância nessa versão.
 #----------------------------------------------------------------#
 
 
