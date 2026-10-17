@@ -572,52 +572,317 @@ round(mean(generate_df_11_points(pares_concat_z)$prec), 3)
 #----------------------------------------------------------------#
 # Questao 4
 #----------------------------------------------------------------#
+# obs.: as distancias sao calculadas para as 5 consultas porque a (j),
+# a (k) e a (l) usam todas elas; a (h) e a (i) usam a regia
 
-# calculando as distancias, descritor:  histograma de cor 
-dist_hist_<to-select> <- get_distance_vector(<to-do>, <to-do>) 
-dist_hist_<to-select> <- <to-do>
-  
-# calculando as distancias, descritor:  textura 
-dist_text_<to-select> <- get_distance_vector(<to-do>, <to-do>) 
-dist_text_<to-select> <- <to-do> 
-  
-# calculando as distancias, descritor:  forma 
-dist_forma_<to-select> <- get_distance_vector(<to-do>, <to-do>) 
-dist_forma_<to-select> <- <to-do> 
-  
+# calculando as distancias, descritor:  histograma de cor
+dist_hist_biloba <- get_distance_vector(features_c, consulta_biloba)
+dist_hist_europaea <- get_distance_vector(features_c, consulta_europaea)
+dist_hist_ilex <- get_distance_vector(features_c, consulta_ilex)
+dist_hist_monogyna <- get_distance_vector(features_c, consulta_monogyna)
+dist_hist_regia <- get_distance_vector(features_c, consulta_regia)
+
+# calculando as distancias, descritor:  textura
+dist_text_biloba <- get_distance_vector(features_t, consulta_biloba)
+dist_text_europaea <- get_distance_vector(features_t, consulta_europaea)
+dist_text_ilex <- get_distance_vector(features_t, consulta_ilex)
+dist_text_monogyna <- get_distance_vector(features_t, consulta_monogyna)
+dist_text_regia <- get_distance_vector(features_t, consulta_regia)
+
+# calculando as distancias, descritor:  forma
+dist_forma_biloba <- get_distance_vector(features_s, consulta_biloba)
+dist_forma_europaea <- get_distance_vector(features_s, consulta_europaea)
+dist_forma_ilex <- get_distance_vector(features_s, consulta_ilex)
+dist_forma_monogyna <- get_distance_vector(features_s, consulta_monogyna)
+dist_forma_regia <- get_distance_vector(features_s, consulta_regia)
+
 # calculando e analisando  rankings combmin
-r_combmin_<to-select> <- names(imagens)[combmin(<to-do>, <to-do>, <to-do>)]
-r_combmin_<to-select> <- <to-do>
+r_combmin_biloba <- names(imagens)[combmin(dist_hist_biloba, dist_text_biloba, dist_forma_biloba)]
+r_combmin_europaea <- names(imagens)[combmin(dist_hist_europaea, dist_text_europaea, dist_forma_europaea)]
+r_combmin_ilex <- names(imagens)[combmin(dist_hist_ilex, dist_text_ilex, dist_forma_ilex)]
+r_combmin_monogyna <- names(imagens)[combmin(dist_hist_monogyna, dist_text_monogyna, dist_forma_monogyna)]
+r_combmin_regia <- names(imagens)[combmin(dist_hist_regia, dist_text_regia, dist_forma_regia)]
 
 # calculando e analisando  rankings combmax
-<to-do>
-  
-# calculando e analisando  rankings combsum
-<to-do>
-  
-# calculando e analisando  rankings borda
-<to-do>
+r_combmax_biloba <- names(imagens)[combmax(dist_hist_biloba, dist_text_biloba, dist_forma_biloba)]
+r_combmax_europaea <- names(imagens)[combmax(dist_hist_europaea, dist_text_europaea, dist_forma_europaea)]
+r_combmax_ilex <- names(imagens)[combmax(dist_hist_ilex, dist_text_ilex, dist_forma_ilex)]
+r_combmax_monogyna <- names(imagens)[combmax(dist_hist_monogyna, dist_text_monogyna, dist_forma_monogyna)]
+r_combmax_regia <- names(imagens)[combmax(dist_hist_regia, dist_text_regia, dist_forma_regia)]
 
-  
-analyse_rankings(<to-do>)
-analyse_rankings(<to-do>)
-  
+# calculando e analisando  rankings combsum
+r_combsum_biloba <- names(imagens)[combsum(dist_hist_biloba, dist_text_biloba, dist_forma_biloba)]
+r_combsum_europaea <- names(imagens)[combsum(dist_hist_europaea, dist_text_europaea, dist_forma_europaea)]
+r_combsum_ilex <- names(imagens)[combsum(dist_hist_ilex, dist_text_ilex, dist_forma_ilex)]
+r_combsum_monogyna <- names(imagens)[combsum(dist_hist_monogyna, dist_text_monogyna, dist_forma_monogyna)]
+r_combsum_regia <- names(imagens)[combsum(dist_hist_regia, dist_text_regia, dist_forma_regia)]
+
+# calculando e analisando  rankings borda
+r_borda_biloba <- names(imagens)[bordacount(dist_hist_biloba, dist_text_biloba, dist_forma_biloba)]
+r_borda_europaea <- names(imagens)[bordacount(dist_hist_europaea, dist_text_europaea, dist_forma_europaea)]
+r_borda_ilex <- names(imagens)[bordacount(dist_hist_ilex, dist_text_ilex, dist_forma_ilex)]
+r_borda_monogyna <- names(imagens)[bordacount(dist_hist_monogyna, dist_text_monogyna, dist_forma_monogyna)]
+r_borda_regia <- names(imagens)[bordacount(dist_hist_regia, dist_text_regia, dist_forma_regia)]
+
+# (h) consulta regia: metricas de cada ranking agregado
+analyse_rankings(r_combmin_regia, ground_truth_regia)
+analyse_rankings(r_combmax_regia, ground_truth_regia)
+analyse_rankings(r_combsum_regia, ground_truth_regia)
+analyse_rankings(r_borda_regia, ground_truth_regia)
+
+#-----------------------------#
+# (i) consulta regia: por que cada agregacao se comporta assim
+
+# distancias normalizadas da regia (cada coluna vai de 0 a 1)
+dists_regia <- cbind(cor = dist_hist_regia, textura = dist_text_regia,
+                     forma = dist_forma_regia)
+# como os valores se distribuem em [0, 1] em cada descritor
+round(apply(dists_regia, 2, quantile, probs = c(0.1, 0.25, 0.5, 0.75, 0.9)), 3)
+# top 10 de cada agregacao, com as tres distancias e a classe
+top10_regia <- list(combmin = r_combmin_regia, combmax = r_combmax_regia,
+                    combsum = r_combsum_regia, borda = r_borda_regia)
+lapply(top10_regia, function(r)
+  data.frame(round(dists_regia[r[1:10], ], 3),
+             classe = classes[match(r[1:10], names(imagens))]))
+# descritor que decide o valor agregado (o minimo no combmin e o
+# maximo no combmax) nas 10 primeiras posicoes
+decisor <- function(r, f) table(factor(
+  colnames(dists_regia)[apply(dists_regia[r[2:10], ], 1, f)],
+  levels = colnames(dists_regia)))
+rbind(combmin = decisor(r_combmin_regia, which.min),
+      combmax = decisor(r_combmax_regia, which.max))
+# sobreposicao do top 10 do combmin com o top 10 da forma
+combmin_x_forma <- list(biloba   = list(r_combmin_biloba, ranking_s_biloba),
+                        europaea = list(r_combmin_europaea, ranking_s_europaea),
+                        ilex     = list(r_combmin_ilex, ranking_s_ilex),
+                        monogyna = list(r_combmin_monogyna, ranking_s_monogyna),
+                        regia    = list(r_combmin_regia, ranking_s_regia))
+round(sapply(combmin_x_forma, function(x) jaccard_index(x[[1]], x[[2]], 10)), 3)
+# posicao de cada regia em cada ranking agregado e individual
+regias <- names(which(ground_truth_regia == 1))
+pos_regias <- sapply(c(top10_regia, list(cor = ranking_c_regia,
+                                         textura = ranking_t_regia,
+                                         forma = ranking_s_regia)),
+                     function(r) match(regias, r))
+rownames(pos_regias) <- basename(regias)
+pos_regias
+# BORDA x CombSUM: posto (rank) de cada imagem do top 10 em cada descritor
+postos_regia <- apply(dists_regia, 2, rank)
+lapply(top10_regia[c("combsum", "borda")], function(r)
+  cbind(postos_regia[r[1:10], ], soma = rowSums(postos_regia[r[1:10], ])))
+
+#-----------------------------#
+# (j) precisao x revocacao interpolada em 11 pontos de cada agregacao
+# (media das 5 consultas)
+pares_combmin <- list(biloba   = list(ground_truth_biloba, r_combmin_biloba),
+                      europaea = list(ground_truth_europaea, r_combmin_europaea),
+                      ilex     = list(ground_truth_ilex, r_combmin_ilex),
+                      monogyna = list(ground_truth_monogyna, r_combmin_monogyna),
+                      regia    = list(ground_truth_regia, r_combmin_regia))
+pares_combmax <- list(biloba   = list(ground_truth_biloba, r_combmax_biloba),
+                      europaea = list(ground_truth_europaea, r_combmax_europaea),
+                      ilex     = list(ground_truth_ilex, r_combmax_ilex),
+                      monogyna = list(ground_truth_monogyna, r_combmax_monogyna),
+                      regia    = list(ground_truth_regia, r_combmax_regia))
+pares_combsum <- list(biloba   = list(ground_truth_biloba, r_combsum_biloba),
+                      europaea = list(ground_truth_europaea, r_combsum_europaea),
+                      ilex     = list(ground_truth_ilex, r_combsum_ilex),
+                      monogyna = list(ground_truth_monogyna, r_combsum_monogyna),
+                      regia    = list(ground_truth_regia, r_combsum_regia))
+pares_borda <- list(biloba   = list(ground_truth_biloba, r_borda_biloba),
+                    europaea = list(ground_truth_europaea, r_borda_europaea),
+                    ilex     = list(ground_truth_ilex, r_borda_ilex),
+                    monogyna = list(ground_truth_monogyna, r_borda_monogyna),
+                    regia    = list(ground_truth_regia, r_borda_regia))
+agregacoes <- list(combmin = pares_combmin, combmax = pares_combmax,
+                   combsum = pares_combsum, borda = pares_borda)
+
+df_combmin_11_points <- generate_df_11_points(pares_combmin)
+df_combmax_11_points <- generate_df_11_points(pares_combmax)
+df_combsum_11_points <- generate_df_11_points(pares_combsum)
+df_borda_11_points <- generate_df_11_points(pares_borda)
+plot_precision_x_recall_11_points_t2(
+  rbind(df_combmin_11_points, df_combmax_11_points,
+        df_combsum_11_points, df_borda_11_points),
+  c("CombMIN", "CombMAX", "CombSUM", "BORDA"),
+  "Precisao x Revocacao interpolada em 11 pontos - agregacoes (5 consultas)")
+pontos_11_agreg <- data.frame(rec = df_combmin_11_points$rec,
+                              combmin = df_combmin_11_points$prec,
+                              combmax = df_combmax_11_points$prec,
+                              combsum = df_combsum_11_points$prec,
+                              borda = df_borda_11_points$prec)
+round(pontos_11_agreg, 3)
+round(colMeans(pontos_11_agreg[, -1]), 3)
+# AP@10 de cada consulta e MAP@10 de cada agregacao
+round(rbind(sapply(agregacoes, function(p)
+  sapply(p, function(x) ap(x[[1]], x[[2]], 10))),
+  MAP = sapply(agregacoes, mean_average_precision, k = 10)), 3)
+# curvas de 11 pontos por consulta
+lapply(agregacoes, function(p)
+  round(sapply(p, function(x) generate_df_11_points(list(x))$prec), 2))
+# biloba: posicao de cada biloba no combmax e suas tres distancias
+dists_biloba <- cbind(cor = dist_hist_biloba, textura = dist_text_biloba,
+                      forma = dist_forma_biloba)
+pos_biloba <- which(ground_truth_biloba[r_combmax_biloba] == 1)
+cbind(posicao = pos_biloba,
+      round(dists_biloba[r_combmax_biloba[pos_biloba], ], 3))
+dims[basename(rownames(dims)) == "biloba_01.jpg", ]
+
+#-----------------------------#
+# (k) MAP@10: descritores individuais, concatenado e CombSUM
+todos <- c(descritores_concat, list(combsum = pares_combsum))
+round(rbind(sapply(todos, function(p)
+  sapply(p, function(x) ap(x[[1]], x[[2]], 10))),
+  MAP = sapply(todos, mean_average_precision, k = 10)), 3)
+
+#-----------------------------#
+# (l) curva de 11 pontos com descritores, concatenado e CombSUM
+plot_precision_x_recall_11_points_t2(
+  rbind(df_c_11_points, df_t_11_points, df_s_11_points,
+        df_concat_11_points, df_combsum_11_points),
+  c("Cor", "Textura", "Forma", "Concatenado", "CombSUM"),
+  "Precisao x Revocacao interpolada em 11 pontos (5 consultas)")
+pontos_11_todos <- cbind(pontos_11_concat, combsum = df_combsum_11_points$prec)
+round(pontos_11_todos, 3)
+round(colMeans(pontos_11_todos[, -1]), 3)
+
+# experimento: CombSUM so com cor e textura (sem a forma)
+pares_combsum_ct <- list(
+  biloba   = list(ground_truth_biloba,
+                  names(imagens)[combsum(dist_hist_biloba, dist_text_biloba)]),
+  europaea = list(ground_truth_europaea,
+                  names(imagens)[combsum(dist_hist_europaea, dist_text_europaea)]),
+  ilex     = list(ground_truth_ilex,
+                  names(imagens)[combsum(dist_hist_ilex, dist_text_ilex)]),
+  monogyna = list(ground_truth_monogyna,
+                  names(imagens)[combsum(dist_hist_monogyna, dist_text_monogyna)]),
+  regia    = list(ground_truth_regia,
+                  names(imagens)[combsum(dist_hist_regia, dist_text_regia)]))
+round(c(sapply(pares_combsum_ct, function(x) ap(x[[1]], x[[2]], 10)),
+        MAP = mean_average_precision(pares_combsum_ct, 10)), 3)
+df_combsum_ct_11_points <- generate_df_11_points(pares_combsum_ct)
+round(df_combsum_ct_11_points$prec, 3)
+round(mean(df_combsum_ct_11_points$prec), 3)
+
 #----------------------------------------------------------------#
-# Questao 4 - RESPONDA:                   
-# (i) 
-# 
-# 
-# 
-# (j)
-# 
-# 
-# 
-# (k)
-# 
-# 
+# Questao 4 - RESPONDA:
+# (i) Consulta escolhida: regia_07 (a mesma da Q2 e da Q3)
+#     Resultados (P@5 | P@10 | AP@10 | R@20 | AP@20):
+#       - CombMIN: 0,4 | 0,2 | 0,167 | 0,6 | 0,290
+#       - CombMAX: 0,8 | 0,6 | 0,550 | 0,9 | 0,724
+#       - CombSUM: 0,8 | 0,7 | 0,628 | 0,9 | 0,743
+#       - BORDA:   1,0 | 0,7 | 0,656 | 0,9 | 0,760
+#     O melhor ranking foi o do BORDA. É o único com as 5 primeiras
+#     posições só de regias (regia_07, 03, 01, 04 e 08), tem a maior
+#     precisão média em todos os tops e empata com o CombSUM em precisão
+#     e revocação do top 10 em diante. No topo do ranking, ele também
+#     supera os descritores isolados (AP@10 de 0,656 contra 0,575 da
+#     textura, 0,444 da cor e 0,167 da forma). A textura isolada ainda
+#     recupera mais regias até o top 20 (R@20 = 1,0), porque a regia_10
+#     fica em 18º na textura, mas em 44º na forma, o que a joga para a
+#     30ª posição ou depois em todas as agregações.
+#     As diferenças vêm de como cada método usa as distâncias, que a
+#     get_distance_vector já normaliza entre 0 e 1 em cada descritor:
+#     - CombMIN: basta um descritor achar a imagem parecida. A
+#       normalização da forma é esticada pelas imagens grandes (a mais
+#       distante da regia_07 é a biloba_01, a maior imagem da base), e
+#       as distâncias de forma ficam comprimidas perto de 0 (10% delas
+#       abaixo de 0,031, contra 0,082 na cor e 0,100 na textura). Por
+#       isso, a forma define o mínimo nas 9 posições do top 10 (fora a
+#       consulta), e o top 10 é idêntico ao da forma (Jaccard@10 = 1).
+#       Entram biloba_03, monogyna_10, monogyna_02 etc., que estão longe
+#       em cor (> 0,5) e em textura (> 0,4), mas têm tamanho parecido.
+#     - CombMAX: a imagem precisa estar perto nos três descritores, o
+#       que elimina esses falsos positivos da forma. O máximo no top 10
+#       vem da cor em 4 posições, da forma em 3 e da textura em 2. Em
+#       compensação, o método é pessimista: a regia_01 e a regia_06, que
+#       estão entre as 6 primeiras em cor e em textura, caem para 6º e
+#       11º porque a forma as coloca em 21º e 27º.
+#     - CombSUM e BORDA: somam os três descritores, então um descritor
+#       ruim não decide sozinho. A diferença é que o BORDA soma posições
+#       e ignora como as distâncias se distribuem. A ilex_06, por
+#       exemplo, é só a 18ª em cor, mas a distância dela (0,176) é
+#       numericamente próxima à das regias (0,07 a 0,11), e somada a uma
+#       textura pequena (0,078) a leva ao 5º lugar no CombSUM. No BORDA,
+#       a soma das posições (18 + 4 + 14 = 36) fica atrás da regia_08
+#       (8 + 10 + 16 = 34), que sobe para 5º e completa o top 5.
+#     Os erros que sobram no top 10 do BORDA (ilex_06, ilex_10 e
+#     ilex_04) são ilex, a classe que já confundia a textura na Q2 (e).
 #
-# (l)
-# 
+# (j) Precisão interpolada (média das 5 consultas):
+#       rev.     0,0  0,1  0,2  0,3  0,4  0,5  0,6  0,7  0,8  0,9  1,0
+#       CombMIN  1,00 1,00 0,74 0,65 0,65 0,61 0,55 0,54 0,54 0,51 0,47
+#       CombMAX  1,00 1,00 1,00 0,93 0,93 0,85 0,74 0,72 0,72 0,57 0,48
+#       CombSUM  1,00 1,00 1,00 0,93 0,93 0,86 0,80 0,73 0,73 0,64 0,54
+#       BORDA    1,00 1,00 1,00 0,91 0,91 0,89 0,78 0,71 0,71 0,65 0,58
+#     Média dos 11 pontos: CombMIN 0,661, CombMAX 0,814, CombSUM 0,834
+#     e BORDA 0,832. MAP@10: 0,429, 0,640, 0,699 e 0,694.
+#     O melhor método foi o COMBSUM, mas por muito pouco: ele e o BORDA
+#     praticamente empatam. O CombSUM tem as maiores médias nas duas
+#     medidas e fica acima ou igual ao BORDA em 8 dos 11 pontos; o BORDA
+#     só fica à frente em 0,5, 0,9 e 1,0. Por consulta, o CombSUM é
+#     melhor na biloba (AP@10 = 0,800 contra 0,678), e o BORDA na
+#     monogyna (0,780 contra 0,700) e na regia.
+#     O CombMIN é o pior em todos os níveis a partir de 0,2. Como visto
+#     na (i), a forma decide o mínimo, e a curva cai junto com a dela
+#     (0,743 em 0,2, o mesmo valor da forma na Q2 (g)). Ele só vai bem
+#     na europaea (precisão 1 em todos os níveis), onde a própria forma
+#     já separa as imagens pequenas.
+#     O CombMAX fica perto do CombSUM até 0,8 (exceto em 0,6), mas cai
+#     no final (0,575 e 0,485) por ser pessimista: na biloba, a
+#     biloba_08 e a biloba_01 vão para 29º e 45º só por causa da forma
+#     (distâncias de 0,736 e 0,991). A biloba_01 é a maior imagem da base
+#     (739 px de largura), mas está perto da consulta em cor (0,087) e
+#     em textura (0,169).
 #
+# (k) AP@10 de cada consulta e a média (MAP@10), com o CombSUM como a
+#     melhor agregação (escolhida na (j)):
+#       consulta    cor    textura  forma  concat  CombSUM
+#       biloba      1,000  0,392    0,125  0,125   0,800
+#       europaea    0,569  0,900    1,000  1,000   1,000
+#       ilex        0,332  0,300    0,393  0,393   0,367
+#       monogyna    1,000  0,271    0,275  0,275   0,700
+#       regia       0,444  0,575    0,167  0,167   0,628
+#       MAP@10      0,669  0,487    0,392  0,392   0,699
+#     Por essa medida, o CombSUM teve o melhor resultado, seguido da cor,
+#     mas com pouca vantagem (0,699 contra 0,669). Ele só é o melhor
+#     isolado na regia (e empata na europaea), mas também nunca vai mal:
+#     seu pior AP@10 é 0,367 (ilex), contra 0,332 da cor, 0,271 da
+#     textura e 0,125 da forma e do concatenado. Cada descritor isolado
+#     é ótimo em algumas consultas e ruim em outras, e a soma compensa.
+#     Em relação à cor, o CombSUM sobe a europaea de 0,569 para 1,000 e a
+#     regia de 0,444 para 0,628, mas perde na biloba (0,800) e na
+#     monogyna (0,700), onde a cor sozinha era perfeita. A ilex continua
+#     difícil para todos (nenhum passa de 0,393).
+#     A comparação com o concatenado mostra que o que importa é o modo
+#     de combinar. Os dois usam as mesmas três características, mas a
+#     get_distance_vector normaliza a distância de cada descritor entre
+#     0 e 1 antes da soma. Assim, nenhum descritor domina pela escala,
+#     como a forma dominava o vetor concatenado na Q3 (e).
 #
+# (l) Precisão interpolada (média das 5 consultas):
+#       rev.     0,0  0,1  0,2  0,3  0,4  0,5  0,6  0,7  0,8  0,9  1,0
+#       CombSUM  1,00 1,00 1,00 0,93 0,93 0,86 0,80 0,73 0,73 0,64 0,54
+#     (as curvas de cor, textura, forma e concatenado são as da Q2 (g)
+#     e da Q3 (f))
+#     Média dos 11 pontos: CombSUM 0,834, cor 0,798, textura 0,726,
+#     forma 0,587 e concatenado 0,587.
+#     O melhor resultado foi o do COMBSUM. A curva dele fica acima de
+#     todas as outras de 0,2 a 0,8 de revocação, com a maior vantagem no
+#     meio (0,859 contra 0,768 da cor em 0,5 e 0,805 contra 0,681 em
+#     0,6). Ou seja, ele coloca mais imagens relevantes nas primeiras
+#     posições do ranking.
+#     O CombSUM só perde no final da curva: em 0,9 e 1,0 a cor fica
+#     acima (0,653 contra 0,637 e 0,536). Na biloba e na monogyna, a cor
+#     recupera todas as relevantes com precisão 1, enquanto no CombSUM as
+#     últimas são empurradas para baixo, e a forma é a maior parcela da
+#     soma delas (a biloba_01, com forma = 0,991, cai para 14º e a
+#     biloba_08 para 23º).
+#     Para confirmar que a perda vem da forma, refizemos o CombSUM só com
+#     cor e textura: o MAP@10 sobe para 0,790, a média da curva para
+#     0,881 e a precisão em revocação 1,0 para 0,731, acima da cor.
+#     Conclusão: agregar as distâncias normalizadas foi a melhor maneira
+#     de combinar os descritores, muito melhor que a concatenação, mas
+#     incluir um descritor fraco como os momentos de forma (que aqui
+#     medem basicamente o tamanho da imagem) ainda custa precisão.
 #----------------------------------------------------------------#
