@@ -538,7 +538,7 @@ round(mean(generate_df_11_points(pares_concat_z)$prec), 3)
 #     Para confirmar, padronizamos cada coluna (z-score) antes de
 #     concatenar: aí a regia_07 passa a ter P@10 = 0,8 e AP@10 = 0,800
 #     (melhor que qualquer descritor isolado) e o MAP@10 sobe para
-#     0,603. Mesmo assim, a influência continua desigual, agora a favor
+#     0,611. Mesmo assim, a influência continua desigual, agora a favor
 #     da cor, que responde por 87% a 94% de d^2 por ter 765 das 832
 #     dimensões. Logo, a combinação por concatenação exige normalizar e
 #     ponderar os blocos.
@@ -561,7 +561,7 @@ round(mean(generate_df_11_points(pares_concat_z)$prec), 3)
 #     - (e): a sobreposição exata das curvas (e dos rankings) em todas as
 #       consultas mostra que o domínio da forma não é um caso isolado da
 #       regia, mas um efeito da escala dos momentos.
-#     Com a padronização (z-score), a média da curva sobe para 0,758,
+#     Com a padronização (z-score), a média da curva sobe para 0,760,
 #     acima da textura e da forma, mas ainda abaixo da cor, o que é
 #     coerente com a cor dominar a distância nessa versão.
 #----------------------------------------------------------------#
@@ -832,7 +832,7 @@ round(mean(df_combsum_ct_11_points$prec), 3)
 #     no final (0,575 e 0,485) por ser pessimista: na biloba, a
 #     biloba_08 e a biloba_01 vão para 29º e 45º só por causa da forma
 #     (distâncias de 0,736 e 0,991). A biloba_01 é a maior imagem da base
-#     (739 px de largura), mas está perto da consulta em cor (0,087) e
+#     (739 px de largura), mas está perto da consulta em cor (0,086) e
 #     em textura (0,169).
 #
 # (k) AP@10 de cada consulta e a média (MAP@10), com o CombSUM como a
